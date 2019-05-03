@@ -21,8 +21,26 @@ Or install it yourself as:
 
 ## Usage
 
-Once installed, 
+Configuature expects a `config/` directory that contains one or more files
+with the file extension `.example`, as in `database.yml.example`. Any files
+of that form found will be copied to their corresponding name minus the
+`.example` extension *if* no such file exists.
 
+This is done with the command:
+
+    bin/config
+
+Where files already exist these are not touched, but are noted in the output
+as being "present".
+
+The opposite step is to remove these files:
+
+    bin/config clean
+
+<blockquote>
+Keep in mind this may remove important credentials so this should be done
+carefully if and only if necessary.
+</blockquote>
 
 ## Development
 
