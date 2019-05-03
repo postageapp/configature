@@ -5,27 +5,36 @@
 require 'fileutils'
 require 'optparse'
 
+require_relative '../lib/configature'
+
 # == Main ===================================================================
 
 options = {
   verbose: false,
-  quiet: false
+  quiet: false,
+  config_dir: Configature.config_dir
 }
 
 program = OptionParser.new do |opts|
   opts.banner = "Usage: config [options]"
 
-  opts.on("-q", "--quiet", "Run quietly with no output") do
+  opts.on('-q', '--quiet', 'Run quietly with no output') do
     options[:quiet] = true
   end
-  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+  opts.on('-v', '--[no-]verbose', 'Run verbosely') do |v|
     options[:verbose] = v
+  end
+
+  opts.on('-d', '--config-dir DIR', 'Configuration directory target') do |dir|
+    options[:config_dir] = dir
   end
 end
 
 args = program.parse!
 
-config_dir = File.expand_path('../config/', __dir__)
+if (options[:verbose])
+  puts 'Checking configuration directory %s' % options[:config_dir]
+end
 
 if (options[:quiet])
   $stdout = StringIO.new
@@ -33,9 +42,7 @@ end
 
 case (arg = args.first)
 when 'clean'
-  Dir.glob(File.expand_path('*.yml.example', config_dir)) do |source|
-    target = source.sub(/\.example\z/, '')
-
+  Configature.configable_examples(options[:config_dir]) do |source, target|
     if (File.exist?(target))
       print "* %s: " % File.basename(target)
       File.unlink(target)
@@ -43,9 +50,7 @@ when 'clean'
     end
   end
 when nil
-  Dir.glob(File.expand_path('*.yml.example', config_dir)) do |source|
-    target = source.sub(/\.example\z/, '')
-  
+  Configature.configable_examples(options[:config_dir]) do |source, target|
     if (File.exist?(target))
       if (File.read(target).match(/__[A-Z\_]+__/))
         puts "* %s: present (requires configuration)" % File.basename(target)
