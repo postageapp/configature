@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+
+# == Imports ================================================================
+
+require 'fileutils'
+require 'optparse'
+
+# == Main ===================================================================
+
+options = {
+  verbose: false,
+  quiet: false
+}
+
+program = OptionParser.new do |opts|
+  opts.banner = "Usage: config [options]"
+
+  opts.on("-q", "--quiet", "Run quietly with no output") do
+    options[:quiet] = true
+  end
+  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+    options[:verbose] = v
+  end
+end
+
+args = program.parse!
+
+config_dir = File.expand_path('../config/', __dir__)
+
+if (options[:quiet])
+  $stdout = StringIO.new
+end
+
+case (arg = args.first)
+when 'clean'
+  Dir.glob(File.expand_path('*.yml.example', config_dir)) do |source|
+    target = source.sub(/\.example\z/, '')
+
+    if (File.exist?(target))
+      print "* %s: " % File.basename(target)
+      File.unlink(target)
+      puts "removed"
+    end
+  end
+when nil
+  Dir.glob(File.expand_path('*.yml.example', config_dir)) do |source|
+    target = source.sub(/\.example\z/, '')
+  
+    if (File.exist?(target))
+      if (File.read(target).match(/__[A-Z\_]+__/))
+        puts "* %s: present (requires configuration)" % File.basename(target)
+      else
+        puts "* %s: present" % File.basename(target)
+      end
+    else
+      FileUtils.copy(source, target)
+  
+      if (File.read(target).match(/__[A-Z\_]+__/))
+        puts "* %s: created (requires configuration)" % File.basename(target)
+      else
+        puts "* %s: created" % File.basename(target)
+      end
+    end
+  end
+else
+  $stderr.puts("Unknown command #{arg.inspect}")
+  exit(-1)
+end
