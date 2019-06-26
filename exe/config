@@ -12,7 +12,7 @@ require_relative '../lib/configature'
 options = {
   verbose: false,
   quiet: false,
-  config_dir: Configature.config_dir
+  config_dir: Configature::Directory.find('config')
 }
 
 program = OptionParser.new do |opts|
@@ -42,30 +42,22 @@ end
 
 case (arg = args.first)
 when 'clean'
-  Configature.configable_examples(options[:config_dir]) do |source, target|
-    if (File.exist?(target))
-      print "* %s: " % File.basename(target)
-      File.unlink(target)
-      puts "removed"
-    end
+  Configature::Stamper.new(options[:config_dir]).clean! do |target|
+    puts "* %s: removed" % File.basename(target)
   end
 when nil
-  Configature.configable_examples(options[:config_dir]) do |source, target|
-    if (File.exist?(target))
-      if (File.read(target).match(/__[A-Z\_]+__/))
-        puts "* %s: present (requires configuration)" % File.basename(target)
-      else
-        puts "* %s: present" % File.basename(target)
-      end
+  Configature::Stamper.new(options[:config_dir]).apply! do |source, target, created:, existing:, config_required:|
+    if (created)
+      print "* %s: created" % File.basename(target)
     else
-      FileUtils.copy(source, target)
-  
-      if (File.read(target).match(/__[A-Z\_]+__/))
-        puts "* %s: created (requires configuration)" % File.basename(target)
-      else
-        puts "* %s: created" % File.basename(target)
-      end
+      print "* %s: present" % File.basename(target)
     end
+
+    if (config_required)
+      print ' (requires configuration)'
+    end
+
+    puts
   end
 else
   $stderr.puts("Unknown command #{arg.inspect}")

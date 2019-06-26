@@ -1,0 +1,8 @@
+development:
+  environment: development
+  nested:
+    content: true
+test:
+  environment: test
+  nested:
+    content: true
