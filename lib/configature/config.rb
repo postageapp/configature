@@ -14,7 +14,9 @@ class Configature::Config < Configature::Data
 
   def self.namespace(name, &block)
     self.namespaces[name] = Configature::Namespace.new(name).tap do |n|
-      case (block.arity)
+      case (block&.arity)
+      when nil
+        nil
       when 1
         block[n]
       else

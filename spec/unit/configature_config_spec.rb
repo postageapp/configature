@@ -28,6 +28,20 @@ class ConfigWithNamespaceParameter < Configature::Config
   end
 end
 
+class ConfigWithNamespaceEnvVariants < Configature::Config
+  namespace :database, env: 'RAILS_ENV' do |db|
+    db.database default: -> { 'appname' }
+    db.host default: 'localhost'
+    db.port as: :integer
+    db.username default: 'guest'
+    db.password default: 'guest'
+  end
+
+  namespace :database_secondary, env_suffix: '_secondary', extends: :database do
+    db.database default: 'appname_secondary'
+  end
+end
+
 RSpec.describe Configature::Config do
   context 'can have' do
     it 'simple configurations with one namespace' do

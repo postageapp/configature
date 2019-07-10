@@ -46,7 +46,9 @@ class Configature::Namespace
     name = name.to_sym
 
     @namespaces[name] = self.class.new(name, env_prefix: @env_prefix).tap do |n|
-      case (block.arity)
+      case (block&.arity)
+      when nil
+        nil
       when 1
         block[n]
       else
