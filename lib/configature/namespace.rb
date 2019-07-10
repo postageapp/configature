@@ -33,17 +33,24 @@ class Configature::Namespace
   
   # == Instance Methods =====================================================
 
-  def initialize(name = nil, env_prefix: nil)
+  def initialize(name = nil, env_prefix: '')
     @name = name&.to_sym
     @namespaces = { }
     @parameters = { }
-    @env_prefix = env_prefix === false ? nil : ''
+    @env_prefix = name ? Configature::Support.extend_env_prefix(env_prefix, name) : ''
 
     yield(self) if (block_given?)
   end
 
-  def namespace(name)
-    @namespaces[name] = self.class.new(name).tap { |n| yield(n) }
+  def namespace(name, &block)
+    @namespaces[name] = self.class.new(name, env_prefix: @env_prefix).tap do |n|
+      case (block.arity)
+      when 1
+        block[n]
+      else
+        n.instance_eval(&block)
+      end
+    end
   end
 
   def env(*names)
@@ -70,29 +77,35 @@ class Configature::Namespace
   end
 
   def [](name)
-    @parameters[name]
+    @parameters[name] or @namespaces[name]
   end
 
   def method_missing(name, **options)
     parameter(name, **options)
   end
 
-  def __instantiate(data: nil, env_prefix: nil)
+  def __instantiate(source: nil, env_prefix: nil, env: nil)
     @parameters.values.map do |param|
       name = param[:name]
       name_s = name.to_s
       name_sym = name_s.to_sym
 
-      [ param[:name], data && (data[name_s] || data[name_sym]) || param[:default] ]
+      [
+        param[:name],
+        (param[:env] && env && env[param[:env]]) ||
+          source && (source[name_s] || source[name_sym]) ||
+          param[:default]
+      ]
     end.to_h.merge(
       @namespaces.map do |name, namespace|
         [
           name,
           namespace.__instantiate(
-            data: data && data[namespace],
+            source: source && source[namespace],
+            env: env,
             env_prefix: Configature::Support.extend_env_prefix(
               env_prefix,
-              namespace.upcase
+              name.upcase
             )
           )
         ]

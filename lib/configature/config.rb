@@ -13,12 +13,12 @@ class Configature::Config < Configature::Data
   # == Class Methods ========================================================
 
   def self.namespace(name, &block)
-    self.namespaces[name] = Configature::Namespace.new(name).tap do |v|
+    self.namespaces[name] = Configature::Namespace.new(name).tap do |n|
       case (block.arity)
       when 1
-        block[v]
+        block[n]
       else
-        v.instance_eval(&block)
+        n.instance_eval(&block)
       end
     end
   end
