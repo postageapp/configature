@@ -15,4 +15,10 @@ RSpec.describe Configature::Namespace do
 
     expect(namespace.__instantiate).to eq(example: 'value')
   end
+
+  it 'allows declaring an environment layer with associated environment variable' do
+    namespace = Configature::Namespace.new
+
+    namespace.env :RAILS_ENV
+  end
 end

@@ -38,10 +38,16 @@ class Configature::Namespace
     @namespaces = { }
     @parameters = { }
     @env_prefix = env_prefix === false ? nil : ''
+
+    yield(self) if (block_given?)
   end
 
   def namespace(name)
     @namespaces[name] = self.class.new(name).tap { |n| yield(n) }
+  end
+
+  def env(*names)
+    @env = names.map(&:to_s).freeze
   end
 
   def parameter(parameter_name, default: nil, as: :string, name: nil, env: nil)
@@ -73,7 +79,11 @@ class Configature::Namespace
 
   def __instantiate(data: nil, env_prefix: nil)
     @parameters.values.map do |param|
-      [ param[:name], param[:default] ]
+      name = param[:name]
+      name_s = name.to_s
+      name_sym = name_s.to_sym
+
+      [ param[:name], data && (data[name_s] || data[name_sym]) || param[:default] ]
     end.to_h.merge(
       @namespaces.map do |name, namespace|
         [
