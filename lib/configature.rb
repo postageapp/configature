@@ -12,6 +12,8 @@ module Configature
   end
 end
 
+require_relative './configature/support'
+
 require_relative './configature/config'
 require_relative './configature/directory'
 require_relative './configature/stamper'

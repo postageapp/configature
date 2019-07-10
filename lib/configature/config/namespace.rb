@@ -1,5 +1,7 @@
 require 'date'
 
+require_relative '../support'
+
 class Configature::Config::Namespace
   # == Constants ============================================================
 
@@ -56,14 +58,21 @@ class Configature::Config::Namespace
   end
 
   def __instantiate(data: nil, env_prefix: nil)
-    OpenStruct.new(
-      @parameters.values.map do |param|
-        [ param[:name], param[:default] ]
-      end.to_h.merge(
-        @namespaces.map do |name, namespace|
-          [ name, namespace.__instantiate ]
-        end.to_h
-      )
+    @parameters.values.map do |param|
+      [ param[:name], param[:default] ]
+    end.to_h.merge(
+      @namespaces.map do |name, namespace|
+        [
+          name,
+          namespace.__instantiate(
+            data: data && data[namespace],
+            env_prefix: Configature::Support.extend_env_prefix(
+              env_prefix,
+              namespace.upcase
+            )
+          )
+        ]
+      end.to_h
     )
   end
 end
