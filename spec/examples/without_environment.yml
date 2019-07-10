@@ -1,3 +1,4 @@
 test: 'value'
 nested:
-  content: true
+  content: 22
+  irrelevant: yes

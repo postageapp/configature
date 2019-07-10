@@ -1,8 +1,9 @@
 development:
-  environment: development
+  environment_name: development
   nested:
-    content: true
+    content: 29
+    irrelvant: yes
 test:
-  environment: test
+  environment_name: test
   nested:
-    content: true
+    content: 41

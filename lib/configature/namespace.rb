@@ -43,6 +43,8 @@ class Configature::Namespace
   end
 
   def namespace(name, &block)
+    name = name.to_sym
+
     @namespaces[name] = self.class.new(name, env_prefix: @env_prefix).tap do |n|
       case (block.arity)
       when 1
@@ -53,8 +55,9 @@ class Configature::Namespace
     end
   end
 
-  def env(*names)
+  def env(*names, default: 'development')
     @env = names.map(&:to_s).freeze
+    @env_default = default
   end
 
   def parameter(parameter_name, default: nil, as: :string, name: nil, env: nil)
@@ -84,7 +87,17 @@ class Configature::Namespace
     parameter(name, **options)
   end
 
-  def __instantiate(source: nil, env_prefix: nil, env: nil)
+  def __instantiate(source: nil, env: nil)
+    if (@env and source)
+      env_key = @env.map { |e| ENV[e] }.first || @env_default
+
+      source = source[env_key] || source[env_key.to_sym]
+    end
+
+    self.__instantiate_branch(source: source, env: env)
+  end
+
+  def __instantiate_branch(source: nil, env: nil)
     @parameters.values.map do |param|
       name = param[:name]
       name_s = name.to_s
@@ -100,13 +113,9 @@ class Configature::Namespace
       @namespaces.map do |name, namespace|
         [
           name,
-          namespace.__instantiate(
-            source: source && source[namespace],
-            env: env,
-            env_prefix: Configature::Support.extend_env_prefix(
-              env_prefix,
-              name.upcase
-            )
+          namespace.__instantiate_branch(
+            source: source && (source[name] || source[name.to_s]),
+            env: env
           )
         ]
       end.to_h

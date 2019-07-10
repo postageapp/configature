@@ -63,4 +63,50 @@ RSpec.describe Configature::Namespace do
 
     expect(data).to eq(inner: { custom: 'env_value', no_env: nil })
   end
+  
+  it('imports settings for a defined environment') do
+    example = Configature::Namespace.new
+    example.environment_name 
+    example.namespace :nested do
+      content as: :integer, default: 0
+    end
+
+    example.env 'IMPORT_EXAMPLE_ENV'
+
+    ENV['IMPORT_EXAMPLE_ENV'] = 'development'
+
+    source = YAML.safe_load(
+      File.open(File.expand_path('../examples/with_environment.yml', __dir__))
+    )
+
+    data = example.__instantiate(source: source)
+
+    expect(data).to eq(
+      environment_name: 'development',
+      nested: {
+        content: 29
+      }
+    )
+  end
+
+  it('imports settings from a YAML file') do
+    example = Configature::Namespace.new
+    example.test 
+    example.namespace :nested do
+      content as: :integer, default: 0
+    end
+
+    source = YAML.safe_load(
+      File.open(File.expand_path('../examples/without_environment.yml', __dir__))
+    )
+
+    data = example.__instantiate(source: source)
+
+    expect(data).to eq(
+      test: 'value',
+      nested: {
+        content: 22
+      }
+    )
+  end
 end
