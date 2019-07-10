@@ -2,17 +2,32 @@ module Configature::Support
   # == Module and Mixin Methods =============================================
 
   def extend_env_prefix(base, with)
-    return unless (base)
+    return base unless (base)
+    return with unless (with)
 
     case (base)
     when ''
-      with
+      with.to_s.upcase
     else
-      base + '_' + with
+      base.upcase + '_' + with.to_s.upcase
     end
   end
 
-  def encapsulate_hashes(obj)
+  def convert_hashes(to_class, obj)
+    case (obj)
+    when Hash
+      to_class.new(
+        obj.map do |k, v|
+          [ k, convert_hashes(to_class, v) ]
+        end.to_h
+      )
+    when Array
+      obj.map do |v|
+        convert_hashes(to_class, v)
+      end
+    else
+      obj
+    end
   end
 
   extend self

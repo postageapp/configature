@@ -1,14 +1,26 @@
 require 'date'
 
-class Configature::Config
+require_relative './data'
+require_relative './support'
+
+require_relative './namespace'
+
+class Configature::Config < Configature::Data
   # == Constants ============================================================
   
   # == Properties ===========================================================
   
   # == Class Methods ========================================================
 
-  def self.namespace(name)
-    self.namespaces[name] = Namespace.new(name).tap { |v| yield(v) }
+  def self.namespace(name, &block)
+    self.namespaces[name] = Configature::Namespace.new(name).tap do |v|
+      case (block.arity)
+      when 1
+        block[v]
+      else
+        v.instance_eval(&block)
+      end
+    end
   end
 
   def self.namespaces
@@ -17,22 +29,16 @@ class Configature::Config
   
   # == Instance Methods =====================================================
 
-  def initialize(path: nil, env: true)
-    @data = self.class.namespaces.map do |name, namespace|
-      [ name, namespace.__instantiate ]
-    end.to_h
-  end
-
-  def [](name)
-    @data[name]
-  end
-
-  def method_missing(name, *args)
-    send(:[], name)
+  def initialize
+    super(
+      self.class.namespaces.transform_values do |namespace|
+        Configature::Support.convert_hashes(Configature::Data, namespace.__instantiate)
+      end.to_h
+    )
   end
 
   def to_h
-    @data.map do |k, v|
+    self.map do |k, v|
       [
         k,
         case (v)
@@ -47,5 +53,3 @@ class Configature::Config
     end.to_h
   end
 end
-
-require_relative './config/namespace'

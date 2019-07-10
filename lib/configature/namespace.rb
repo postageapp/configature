@@ -1,8 +1,8 @@
 require 'date'
 
-require_relative '../support'
+require_relative './support'
 
-class Configature::Config::Namespace
+class Configature::Namespace
   # == Constants ============================================================
 
   AS_BOOLEAN = Hash.new { |h,k| h[k] = !!k }.merge(
@@ -33,24 +33,38 @@ class Configature::Config::Namespace
   
   # == Instance Methods =====================================================
 
-  def initialize(name = nil)
+  def initialize(name = nil, env_prefix: nil)
     @name = name&.to_sym
     @namespaces = { }
     @parameters = { }
+    @env_prefix = env_prefix === false ? nil : ''
   end
 
   def namespace(name)
     @namespaces[name] = self.class.new(name).tap { |n| yield(n) }
   end
 
-  def parameter(parameter_name, default: nil, as: :string, name: nil)
+  def parameter(parameter_name, default: nil, as: :string, name: nil, env: nil)
     name ||= parameter_name
 
     @parameters[name] = {
       name: name,
       default: default,
-      as: as
+      as: as,
+      env:
+        case (env)
+        when false
+          false
+        when nil
+          Configature::Support.extend_env_prefix(@env_prefix, name)
+        else
+          env
+        end
     }
+  end
+
+  def [](name)
+    @parameters[name]
   end
 
   def method_missing(name, **options)

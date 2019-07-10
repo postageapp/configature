@@ -15,5 +15,7 @@ end
 require_relative './configature/support'
 
 require_relative './configature/config'
+require_relative './configature/data'
 require_relative './configature/directory'
+require_relative './configature/namespace'
 require_relative './configature/stamper'

@@ -1,3 +1,9 @@
+class SimpleExample < Configature::Config
+  namespace :main do
+    example default: 'value'
+  end
+end
+
 class ConfigMapExample < Configature::Config
   namespace :rabbitmq do |rmq|
     rmq.host default: 'localhost'
@@ -23,10 +29,20 @@ class ConfigWithNamespaceParameter < Configature::Config
 end
 
 RSpec.describe Configature::Config do
-  context 'can create' do
+  context 'can have' do
+    it 'simple configurations with one namespace' do
+      simple = SimpleExample.new
+
+      p simple
+
+      expect(simple.main.class).to eq(Configature::Data)
+      expect(simple.main.example).to eq('value')
+    end
+
     it 'complex configurations with multiple namespaces' do
       map = ConfigMapExample.new
 
+      expect(map.rabbitmq).to be
       expect(map.rabbitmq.host).to eq('localhost')
     end
   end
