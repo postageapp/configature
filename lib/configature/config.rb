@@ -12,8 +12,8 @@ class Configature::Config < Configature::Data
   
   # == Class Methods ========================================================
 
-  def self.namespace(name, &block)
-    self.namespaces[name] = Configature::Namespace.new(name).tap do |n|
+  def self.namespace(name, env_suffix: '', extends: nil, &block)
+    self.namespaces[name] = Configature::Namespace.new(name, env_suffix: env_suffix, extends: extends && self.namespaces[extends]).tap do |n|
       case (block&.arity)
       when nil
         nil
@@ -40,7 +40,7 @@ class Configature::Config < Configature::Data
   end
 
   def to_h
-    self.map do |k, v|
+    super.map do |k, v|
       [
         k,
         case (v)

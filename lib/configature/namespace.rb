@@ -27,17 +27,21 @@ class Configature::Namespace
   # == Properties ===========================================================
 
   attr_reader :name
+  attr_reader :env_name_prefix
+  attr_reader :namespaces
   attr_reader :parameters
   
   # == Class Methods ========================================================
   
   # == Instance Methods =====================================================
 
-  def initialize(name = nil, env_prefix: '')
+  def initialize(name = nil, env_name_prefix: '', env_suffix: '', extends: nil)
     @name = name&.to_sym
-    @namespaces = { }
-    @parameters = { }
-    @env_prefix = name ? Configature::Support.extend_env_prefix(env_prefix, name) : ''
+    @extends = extends
+    @namespaces = extends ? extends.namespaces.dup : { }
+    @parameters = extends ? extends.parameters.dup : { }
+    @env_suffix = env_suffix
+    @env_name_prefix = name ? Configature::Support.extend_env_prefix(env_name_prefix, name) : ''
 
     yield(self) if (block_given?)
   end
@@ -45,7 +49,7 @@ class Configature::Namespace
   def namespace(name, &block)
     name = name.to_sym
 
-    @namespaces[name] = self.class.new(name, env_prefix: @env_prefix).tap do |n|
+    @namespaces[name] = self.class.new(name, env_name_prefix: @env_name_prefix).tap do |n|
       case (block&.arity)
       when nil
         nil
@@ -74,7 +78,7 @@ class Configature::Namespace
         when false
           false
         when nil
-          Configature::Support.extend_env_prefix(@env_prefix, name)
+          Configature::Support.extend_env_prefix(@env_name_prefix, name)
         else
           env
         end
