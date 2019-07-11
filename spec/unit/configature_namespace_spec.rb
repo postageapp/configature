@@ -109,4 +109,24 @@ RSpec.describe Configature::Namespace do
       }
     )
   end
+
+  context 'supports rewriting certain parameters' do
+    it 'using a Hash look-up table' do
+      example = Configature::Namespace.new
+      example.remapped remap: { 'one' => '1', 'two' => '2' }
+
+      data = example.__instantiate(source: { remapped: 'one' })
+
+      expect(data).to eq(remapped: '1')
+    end
+
+    it 'using a Proc' do
+      example = Configature::Namespace.new
+      example.remapped remap: -> (v) { v.to_s }
+
+      data = example.__instantiate(source: { remapped: 1 })
+
+      expect(data).to eq(remapped: '1')
+    end
+  end
 end

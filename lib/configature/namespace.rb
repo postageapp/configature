@@ -66,13 +66,14 @@ class Configature::Namespace
     @env_default = default
   end
 
-  def parameter(parameter_name, default: nil, as: :string, name: nil, env: nil)
+  def parameter(parameter_name, default: nil, as: :string, name: nil, env: nil, remap: nil)
     name ||= parameter_name
 
     @parameters[name] = {
       name: name,
       default: default,
       as: as,
+      remap: remap,
       env:
         case (env)
         when false
@@ -109,12 +110,16 @@ class Configature::Namespace
       name_s = name.to_s
       name_sym = name_s.to_sym
 
-      [
-        param[:name],
-        (param[:env] && env && env[param[:env]]) ||
-          source && (source[name_s] || source[name_sym]) ||
-          param[:default]
-      ]
+      value = (param[:env] && env && env[param[:env]]) ||
+        source && (source[name_s] || source[name_sym])
+        
+
+      case (remap = param[:remap])
+      when Hash, Proc
+        value = remap[value] || value
+      end
+
+      [ param[:name], value.nil? ? param[:default] : value ]
     end.to_h.merge(
       @namespaces.map do |name, namespace|
         [
