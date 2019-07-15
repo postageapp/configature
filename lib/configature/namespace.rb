@@ -71,7 +71,7 @@ class Configature::Namespace
 
     @parameters[name] = {
       name: name,
-      default: default,
+      default: default.is_a?(Proc) ? default : -> { default },
       as: as,
       remap: remap,
       env:
@@ -119,7 +119,7 @@ class Configature::Namespace
         value = remap[value] || value
       end
 
-      [ param[:name], value.nil? ? param[:default] : value ]
+      [ param[:name], value.nil? ? param[:default].call : value ]
     end.to_h.merge(
       @namespaces.map do |name, namespace|
         [

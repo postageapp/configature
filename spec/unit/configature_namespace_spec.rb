@@ -65,13 +65,13 @@ RSpec.describe Configature::Namespace do
   end
   
   it('imports settings for a defined environment') do
-    example = Configature::Namespace.new
-    example.environment_name 
-    example.namespace :nested do
+    namespace = Configature::Namespace.new
+    namespace.environment_name 
+    namespace.namespace :nested do
       content as: :integer, default: 0
     end
 
-    example.env 'IMPORT_EXAMPLE_ENV'
+    namespace.env 'IMPORT_EXAMPLE_ENV'
 
     ENV['IMPORT_EXAMPLE_ENV'] = 'development'
 
@@ -79,7 +79,7 @@ RSpec.describe Configature::Namespace do
       File.open(File.expand_path('../examples/with_environment.yml', __dir__))
     )
 
-    data = example.__instantiate(source: source)
+    data = namespace.__instantiate(source: source)
 
     expect(data).to eq(
       environment_name: 'development',
@@ -90,9 +90,9 @@ RSpec.describe Configature::Namespace do
   end
 
   it('imports settings from a YAML file') do
-    example = Configature::Namespace.new
-    example.test 
-    example.namespace :nested do
+    namespace = Configature::Namespace.new
+    namespace.test 
+    namespace.namespace :nested do
       content as: :integer, default: 0
     end
 
@@ -100,7 +100,7 @@ RSpec.describe Configature::Namespace do
       File.open(File.expand_path('../examples/without_environment.yml', __dir__))
     )
 
-    data = example.__instantiate(source: source)
+    data = namespace.__instantiate(source: source)
 
     expect(data).to eq(
       test: 'value',
@@ -112,21 +112,45 @@ RSpec.describe Configature::Namespace do
 
   context 'supports rewriting certain parameters' do
     it 'using a Hash look-up table' do
-      example = Configature::Namespace.new
-      example.remapped remap: { 'one' => '1', 'two' => '2' }
+      namespace = Configature::Namespace.new
+      namespace.remapped remap: { 'one' => '1', 'two' => '2' }
 
-      data = example.__instantiate(source: { remapped: 'one' })
+      data = namespace.__instantiate(source: { remapped: 'one' })
 
       expect(data).to eq(remapped: '1')
     end
 
     it 'using a Proc' do
-      example = Configature::Namespace.new
-      example.remapped remap: -> (v) { v.to_s }
+      namespace = Configature::Namespace.new
+      namespace.remapped remap: -> (v) { v.to_s }
 
-      data = example.__instantiate(source: { remapped: 1 })
+      data = namespace.__instantiate(source: { remapped: 1 })
 
       expect(data).to eq(remapped: '1')
+    end
+  end
+
+  context 'can declare defaults' do
+    it 'as inline values' do
+      default = 'example'
+
+      namespace = Configature::Namespace.new
+      namespace.with_default default: default
+
+      data = namespace.__instantiate
+
+      expect(data).to eq(with_default: 'example')
+    end
+
+    it 'using a proc' do
+      default = 'example'
+
+      namespace = Configature::Namespace.new
+      namespace.with_default default: -> { default }
+
+      data = namespace.__instantiate
+
+      expect(data).to eq(with_default: 'example')
     end
   end
 end
