@@ -94,9 +94,9 @@ class Configature::Namespace
     parameter(name, **options)
   end
 
-  def __instantiate(source: nil, env: nil)
+  def __instantiate(source: nil, env: ENV)
     if (@env and source)
-      env_key = @env.map { |e| ENV[e] }.first || @env_default
+      env_key = @env.map { |e| env[e] }.first || @env_default
 
       source = source[env_key] || source[env_key.to_sym]
     end

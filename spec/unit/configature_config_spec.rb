@@ -53,6 +53,8 @@ RSpec.describe Configature::Config do
       expect(simple.main.example).to eq('value')
 
       expect(simple.to_h).to eq(main: { example: 'value' })
+
+      expect(SimpleExample.main).to eq(example: 'value')
     end
 
     it 'complex configurations with multiple namespaces' do
