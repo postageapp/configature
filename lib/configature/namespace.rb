@@ -105,31 +105,33 @@ class Configature::Namespace
   end
 
   def __instantiate_branch(source: nil, env: nil)
-    @parameters.values.map do |param|
-      name = param[:name]
-      name_s = name.to_s
-      name_sym = name_s.to_sym
+    Configature::Data.new(
+      @parameters.values.map do |param|
+        name = param[:name]
+        name_s = name.to_s
+        name_sym = name_s.to_sym
 
-      value = (param[:env] && env && env[param[:env]]) ||
-        source && (source[name_s] || source[name_sym])
-        
+        value = (param[:env] && env && env[param[:env]]) ||
+          source && (source[name_s] || source[name_sym])
+          
 
-      case (remap = param[:remap])
-      when Hash, Proc
-        value = remap[value] || value
-      end
+        case (remap = param[:remap])
+        when Hash, Proc
+          value = remap[value] || value
+        end
 
-      [ param[:name], value.nil? ? param[:default].call : value ]
-    end.to_h.merge(
-      @namespaces.map do |name, namespace|
-        [
-          name,
-          namespace.__instantiate_branch(
-            source: source && (source[name] || source[name.to_s]),
-            env: env
-          )
-        ]
-      end.to_h
+        [ param[:name], value.nil? ? param[:default].call : value ]
+      end.to_h.merge(
+        @namespaces.map do |name, namespace|
+          [
+            name,
+            namespace.__instantiate_branch(
+              source: source && (source[name] || source[name.to_s]),
+              env: env
+            )
+          ]
+        end.to_h
+      )
     )
   end
 end

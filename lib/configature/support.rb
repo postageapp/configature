@@ -15,9 +15,9 @@ module Configature::Support
 
   def convert_hashes(to_class, obj)
     case (obj)
-    when Hash
+    when Hash, OpenStruct, Configature::Data
       to_class.new(
-        obj.map do |k, v|
+        obj.to_h.map do |k, v|
           [ k, convert_hashes(to_class, v) ]
         end.to_h
       )

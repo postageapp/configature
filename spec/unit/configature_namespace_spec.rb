@@ -2,7 +2,7 @@ RSpec.describe Configature::Namespace do
   it 'has minimal defaults' do
     namespace = Configature::Namespace.new
 
-    expect(namespace.__instantiate).to eq({ })
+    expect(namespace.__instantiate.to_h).to eq({ })
     expect(namespace.name).to be_nil
   end
 
@@ -13,7 +13,7 @@ RSpec.describe Configature::Namespace do
 
     expect(namespace[:example][:env]).to eq('EXAMPLE')
 
-    expect(namespace.__instantiate).to eq(example: 'value')
+    expect(namespace.__instantiate.to_h).to eq(example: 'value')
   end
 
   it 'allows defining arbitrary parameters with proper prefixing' do
@@ -23,7 +23,7 @@ RSpec.describe Configature::Namespace do
 
     expect(namespace[:example][:env]).to eq('NAMESPACE_EXAMPLE')
 
-    expect(namespace.__instantiate).to eq(example: 'value')
+    expect(namespace.__instantiate.to_h).to eq(example: 'value')
   end
 
   it 'allows declaring an environment layer with associated environment variable' do
@@ -43,7 +43,7 @@ RSpec.describe Configature::Namespace do
     expect(root[:inner][:value]).to be
     expect(root[:inner][:value][:env]).to eq('ROOT_INNER_VALUE')
 
-    data = root.__instantiate(env: { 'ROOT_INNER_VALUE' => 'env_value' })
+    data = root.__instantiate(env: { 'ROOT_INNER_VALUE' => 'env_value' }).to_h
 
     expect(data).to eq(inner: { value: 'env_value' })
   end
@@ -59,7 +59,7 @@ RSpec.describe Configature::Namespace do
     expect(root[:inner][:custom][:env]).to eq('INNER_VALUE')
     expect(root[:inner][:no_env][:env]).to eq(false)
 
-    data = root.__instantiate(env: { 'INNER_VALUE' => 'env_value' })
+    data = root.__instantiate(env: { 'INNER_VALUE' => 'env_value' }).to_h
 
     expect(data).to eq(inner: { custom: 'env_value', no_env: nil })
   end
@@ -79,7 +79,7 @@ RSpec.describe Configature::Namespace do
       File.open(File.expand_path('../examples/with_environment.yml', __dir__))
     )
 
-    data = namespace.__instantiate(source: source)
+    data = namespace.__instantiate(source: source).to_h
 
     expect(data).to eq(
       environment_name: 'development',
@@ -100,7 +100,7 @@ RSpec.describe Configature::Namespace do
       File.open(File.expand_path('../examples/without_environment.yml', __dir__))
     )
 
-    data = namespace.__instantiate(source: source)
+    data = namespace.__instantiate(source: source).to_h
 
     expect(data).to eq(
       test: 'value',
@@ -115,7 +115,7 @@ RSpec.describe Configature::Namespace do
       namespace = Configature::Namespace.new
       namespace.remapped remap: { 'one' => '1', 'two' => '2' }
 
-      data = namespace.__instantiate(source: { remapped: 'one' })
+      data = namespace.__instantiate(source: { remapped: 'one' }).to_h
 
       expect(data).to eq(remapped: '1')
     end
@@ -124,7 +124,7 @@ RSpec.describe Configature::Namespace do
       namespace = Configature::Namespace.new
       namespace.remapped remap: -> (v) { v.to_s }
 
-      data = namespace.__instantiate(source: { remapped: 1 })
+      data = namespace.__instantiate(source: { remapped: 1 }).to_h
 
       expect(data).to eq(remapped: '1')
     end
@@ -137,7 +137,7 @@ RSpec.describe Configature::Namespace do
       namespace = Configature::Namespace.new
       namespace.with_default default: default
 
-      data = namespace.__instantiate
+      data = namespace.__instantiate.to_h
 
       expect(data).to eq(with_default: 'example')
     end
@@ -148,7 +148,7 @@ RSpec.describe Configature::Namespace do
       namespace = Configature::Namespace.new
       namespace.with_default default: -> { default }
 
-      data = namespace.__instantiate
+      data = namespace.__instantiate.to_h
 
       expect(data).to eq(with_default: 'example')
     end
