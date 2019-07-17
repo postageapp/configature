@@ -42,6 +42,26 @@ Keep in mind this may remove important credentials so this should be done
 carefully if and only if necessary.
 </blockquote>
 
+### Definining Configuration
+
+Most applications should have a configuration definition like this:
+
+    class MyConfig < Configature::Config
+      namespace :example do
+        argument default: 'value'
+      end
+    end
+
+Where that defines a single namespace in the configuration. When instantiated
+the configuration values can be read:
+
+    config = MyConfig.new
+    config.example.argument
+    # => 'value'
+
+This value can be overridden with the environment variable `EXAMPLE_ARGUMENT`
+or in a config file `config/example.yml` under the `argument:` key.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then,
