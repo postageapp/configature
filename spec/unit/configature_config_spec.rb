@@ -22,6 +22,16 @@ class ConfigMapExample < Configature::Config
   end
 end
 
+class ConfigWithEnvironment < Configature::Config
+  namespace :with_environment do
+    env :RAILS_ENV
+    environment_name default: 'default-env'
+    namespace :nested do
+      content as: :integer, default: 0
+    end
+  end
+end
+
 class ConfigWithNamespaceParameter < Configature::Config
   namespace :main do |main|
     main.property name: :namespace
@@ -56,6 +66,32 @@ RSpec.describe Configature::Config do
 
       expect(SimpleExample.main.class).to eq(Configature::Data)
       expect(SimpleExample.main.to_h).to eq(example: 'value')
+    end
+
+    it 'configurations that vary depending on environment' do
+      config = ConfigWithEnvironment.new(
+        config_dir: File.expand_path('../examples/', __dir__),
+        env: { 'RAILS_ENV' => 'test' }
+      )
+
+      expect(config.with_environment.to_h).to eq(
+        environment_name: 'test',
+        nested: {
+          content: 116
+        }
+      )
+
+      config = ConfigWithEnvironment.new(
+        config_dir: File.expand_path('../examples/', __dir__),
+        env: { 'RAILS_ENV' => 'development' }
+      )
+
+      expect(config.with_environment.to_h).to eq(
+        environment_name: 'development',
+        nested: {
+          content: 100
+        }
+      )
     end
 
     it 'complex configurations with multiple namespaces' do

@@ -12,6 +12,14 @@ class Configature::Config < Configature::Data
   
   # == Class Methods ========================================================
 
+  def self.config_dir
+    @config_dir ||= defined?(Rails) && Rails.root.join('config/')
+  end
+
+  def self.config_dir=(dir)
+    @config_dir = dir
+  end
+
   def self.namespace(name, env_suffix: '', extends: nil, &block)
     namespace = self.namespaces[name] = Configature::Namespace.new(name, env_suffix: env_suffix, extends: extends && self.namespaces[extends]).tap do |n|
       case (block&.arity)
@@ -28,7 +36,11 @@ class Configature::Config < Configature::Data
       iv = :"@#{name}"
 
       singleton_class.send(:define_method, name) do
-        instance_variable_get(iv) or instance_variable_set(iv, namespace.__instantiate)
+        config_path = File.expand_path('%s.yml' % name, self.config_dir)
+
+        config = File.exist?(config_path) ? YAML.safe_load(File.open(config_path)) : nil
+
+        instance_variable_get(iv) or instance_variable_set(iv, namespace.__instantiate(source: config))
       end
     end
   end
@@ -39,10 +51,20 @@ class Configature::Config < Configature::Data
   
   # == Instance Methods =====================================================
 
-  def initialize
+  def initialize(config_dir: nil, env: ENV)
     super(
-      self.class.namespaces.transform_values do |namespace|
-        Configature::Support.convert_hashes(Configature::Data, namespace.__instantiate)
+      self.class.namespaces.map do |name, namespace|
+        config_path = File.expand_path('%s.yml' % name, config_dir || self.class.config_dir)
+
+        config = File.exist?(config_path) ? YAML.safe_load(File.open(config_path)) : nil
+
+        [
+          name,
+          Configature::Support.convert_hashes(
+            Configature::Data,
+            namespace.__instantiate(source: config, env: env)
+          )
+        ]
       end.to_h
     )
   end

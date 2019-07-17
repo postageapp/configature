@@ -113,7 +113,6 @@ class Configature::Namespace
 
         value = (param[:env] && env && env[param[:env]]) ||
           source && (source[name_s] || source[name_sym])
-          
 
         case (remap = param[:remap])
         when Hash, Proc

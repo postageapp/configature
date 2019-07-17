@@ -84,7 +84,7 @@ RSpec.describe Configature::Namespace do
     expect(data).to eq(
       environment_name: 'development',
       nested: {
-        content: 29
+        content: 100
       }
     )
   end
