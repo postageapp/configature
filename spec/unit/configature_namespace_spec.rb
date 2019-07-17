@@ -75,8 +75,8 @@ RSpec.describe Configature::Namespace do
 
     ENV['IMPORT_EXAMPLE_ENV'] = 'development'
 
-    source = YAML.safe_load(
-      File.open(File.expand_path('../examples/with_environment.yml', __dir__))
+    source = Configature::Support.yaml_if_exist(
+      File.expand_path('../examples/with_environment.yml', __dir__)
     )
 
     data = namespace.__instantiate(source: source).to_h

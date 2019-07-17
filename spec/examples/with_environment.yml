@@ -1,9 +1,14 @@
+defaults: &defaults
+  placeholder: true
+
 development:
+  <<: *defaults
   environment_name: development
   nested:
     content: 100
     irrelvant: yes
 test:
+  <<: *defaults
   environment_name: test
   nested:
     content: 116

@@ -38,7 +38,7 @@ class Configature::Config < Configature::Data
       singleton_class.send(:define_method, name) do
         config_path = File.expand_path('%s.yml' % name, self.config_dir)
 
-        config = File.exist?(config_path) ? YAML.safe_load(File.open(config_path)) : nil
+        config = Configature::Support.yaml_if_exist(config_path)
 
         instance_variable_get(iv) or instance_variable_set(iv, namespace.__instantiate(source: config))
       end
@@ -56,7 +56,7 @@ class Configature::Config < Configature::Data
       self.class.namespaces.map do |name, namespace|
         config_path = File.expand_path('%s.yml' % name, config_dir || self.class.config_dir)
 
-        config = File.exist?(config_path) ? YAML.safe_load(File.open(config_path)) : nil
+        config = Configature::Support.yaml_if_exist(config_path)
 
         [
           name,

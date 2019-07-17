@@ -1,5 +1,13 @@
+require 'yaml'
+
 module Configature::Support
   # == Module and Mixin Methods =============================================
+
+  def yaml_if_exist(path)
+    return unless (File.exist?(path))
+    
+    YAML.safe_load(File.open(path), aliases: true)
+  end
 
   def extend_env_prefix(base, with)
     return base unless (base)
