@@ -7,6 +7,9 @@ development:
   nested:
     content: 100
     irrelvant: yes
+development_alternate:
+  nested:
+    content: 102
 test:
   <<: *defaults
   environment_name: test

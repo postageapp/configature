@@ -20,7 +20,7 @@ class Configature::Config < Configature::Data
     @config_dir = dir
   end
 
-  def self.namespace(name, env_suffix: '', extends: nil, &block)
+  def self.namespace(name, file: nil, env_suffix: '', extends: nil, &block)
     namespace = self.namespaces[name] = Configature::Namespace.new(name, env_suffix: env_suffix, extends: extends && self.namespaces[extends]).tap do |n|
       case (block&.arity)
       when nil
@@ -32,11 +32,17 @@ class Configature::Config < Configature::Data
       end
     end
 
+    file = file&.to_s || name.to_s
+
+    if (file and !file.include?('.'))
+      file += '.yml'
+    end
+
     unless (self.respond_to?(name))
       iv = :"@#{name}"
 
       singleton_class.send(:define_method, name) do
-        config_path = File.expand_path('%s.yml' % name, self.config_dir)
+        config_path = File.expand_path(file, self.config_dir)
 
         config = Configature::Support.yaml_if_exist(config_path)
 
