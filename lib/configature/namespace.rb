@@ -27,6 +27,8 @@ class Configature::Namespace
   # == Properties ===========================================================
 
   attr_reader :name
+  attr_reader :env
+  attr_reader :env_default
   attr_reader :env_name_prefix
   attr_reader :namespaces
   attr_reader :parameters
@@ -38,6 +40,8 @@ class Configature::Namespace
   def initialize(name = nil, env_name_prefix: '', env_suffix: '', extends: nil)
     @name = name&.to_sym
     @extends = extends
+    @env = extends&.env
+    @env_default = extends&.env_default
     @namespaces = extends ? extends.namespaces.dup : { }
     @parameters = extends ? extends.parameters.dup : { }
     @env_suffix = env_suffix
