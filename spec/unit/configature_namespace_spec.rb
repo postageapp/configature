@@ -130,6 +130,44 @@ RSpec.describe Configature::Namespace do
     end
   end
 
+  context 'can have sub-namespaces' do
+    it 'with properties' do
+      namespace = Configature::Namespace.new
+      namespace.namespace :sub do
+        example default: 'value'
+      end
+
+      data = namespace.__instantiate.to_h
+
+      expect(data).to eq(sub: { example: 'value' })
+    end
+
+    it 'that extend other namespaces' do
+      namespace = Configature::Namespace.new
+      namespace.namespace :primary do
+        example default: 'value'
+      end
+      namespace.namespace :secondary, extends: :primary
+
+      data = namespace.__instantiate.to_h
+
+      expect(data).to eq(
+        primary: { example: 'value' },
+        secondary: { example: 'value' }
+      )
+
+      data = namespace.__instantiate(source: {
+        primary: { example: 'primary_value' },
+        secondary: { example: 'secondary_value' },
+      }).to_h
+
+      expect(data).to eq(
+        primary: { example: 'primary_value' },
+        secondary: { example: 'secondary_value' }
+      )
+    end
+  end
+
   context 'can declare defaults' do
     it 'as inline values' do
       default = 'example'
