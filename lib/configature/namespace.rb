@@ -46,10 +46,10 @@ class Configature::Namespace
     yield(self) if (block_given?)
   end
 
-  def namespace(name, &block)
+  def namespace(name, env_suffix: '', extends: nil, &block)
     name = name.to_sym
 
-    @namespaces[name] = self.class.new(name, env_name_prefix: @env_name_prefix).tap do |n|
+    @namespaces[name] = self.class.new(name, env_suffix: env_suffix, extends: extends, env_name_prefix: @env_name_prefix).tap do |n|
       case (block&.arity)
       when nil
         nil
