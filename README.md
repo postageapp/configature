@@ -44,7 +44,8 @@ carefully if and only if necessary.
 
 ### Definining Configuration
 
-Most applications should have a configuration definition like this:
+Most applications should have a configuration definition like this where
+one or more *namespace* is defined where configuration information is stored:
 
     class MyConfig < Configature::Config
       namespace :example do
@@ -52,12 +53,25 @@ Most applications should have a configuration definition like this:
       end
     end
 
-Where that defines a single namespace in the configuration. When instantiated
-the configuration values can be read:
+In this case a single namespace is defined. When instantiated the configuration
+values can be read:
 
     config = MyConfig.new
     config.example.argument
     # => 'value'
+
+This can also be accessed through a factory method that provides convenient
+defaults:
+
+    Config.example.argument
+    # => 'value'
+
+In most cases this can be adequate. The `MyConfig.new` approach allows
+specifying which config file to load and which environment to read from,
+something that may be important in some situations.
+
+The default is to load from `ENV`, the main environment, and `config/`
+relative to `Rails.root` if `Rails` is defined.
 
 This value can be overridden with the environment variable `EXAMPLE_ARGUMENT`
 or in a config file `config/example.yml` under the `argument:` key.
