@@ -6,7 +6,8 @@ module Configature::Support
   def yaml_if_exist(path)
     return unless (File.exist?(path))
     
-    YAML.safe_load(File.open(path), aliases: true)
+    # FIX: Use safe_load if safe_load supports aliases
+    YAML.load(File.open(path))
   end
 
   def extend_env_prefix(base, with)
