@@ -12,12 +12,16 @@ gem 'configature'
 
 And then execute:
 
-    bundle
-    bundle binstubs configature
+```shell
+bundle
+bundle binstubs configature
+```
 
 Or install it yourself as:
 
-    gem install configature
+```shell
+gem install configature
+```
 
 ## Usage
 
@@ -28,14 +32,18 @@ of that form found will be copied to their corresponding name minus the
 
 This is done with the command:
 
-    bin/config
+```shell
+bin/config
+```
 
 Where files already exist these are not touched, but are noted in the output
 as being "present".
 
 The opposite step is to remove these files:
 
-    bin/config clean
+```shell
+bin/config clean
+```
 
 <blockquote>
 Keep in mind this may remove important credentials so this should be done
@@ -47,24 +55,30 @@ carefully if and only if necessary.
 Most applications should have a configuration definition like this where
 one or more *namespace* is defined where configuration information is stored:
 
-    class MyConfig < Configature::Config
-      namespace :example do
-        argument default: 'value'
-      end
-    end
+```ruby
+class MyConfig < Configature::Config
+  namespace :example do
+    argument default: 'value'
+  end
+end
+```
 
 In this case a single namespace is defined. When instantiated the configuration
 values can be read:
 
-    config = MyConfig.new
-    config.example.argument
-    # => 'value'
+```ruby
+config = MyConfig.new
+config.example.argument
+# => 'value'
+```
 
 This can also be accessed through a factory method that provides convenient
 defaults:
 
-    Config.example.argument
-    # => 'value'
+```ruby
+Config.example.argument
+# => 'value'
+```
 
 In most cases this can be adequate. The `MyConfig.new` approach allows
 specifying which config file to load and which environment to read from,
