@@ -5,24 +5,36 @@ require_relative './support'
 class Configature::Namespace
   # == Constants ============================================================
 
-  AS_BOOLEAN = Hash.new { |h,k| h[k] = !!k }.merge(
-    'on' => true,
-    'off' => false,
-    'yes' => true,
-    'no' => false,
-    '1' => true,
-    '0' => false
-  ).freeze
+  BOOLEAN_EQUIVALENT = begin
+    h = {
+      true => %w[ on yes 1 ],
+      false => %w[ off no 0 ]
+    }.flat_map do |k, a|
+      a.map do |v|
+        [ v, k ]
+      end
+    end.to_h
 
-  RECAST = {
-    string: -> (v) { v.to_s },
-    integer: -> (v) { v.to_i },
-    float: -> (v) { v.to_f },
-    boolean: -> (v) { AS_BOOLEAN[v] },
-    date: -> (v) { Date.parse(v) },
-    datetime: -> (v) { DateTime.parse(v) },
-    time: -> (v) { v.match?(/\A\d+\z/) ? Time.at(v.to_i) : Time.parse(v) }
-  }.freeze
+    -> (v) do
+      b = h[v]
+
+      b.nil? ? !!v : b
+    end
+  end
+
+  RECAST_AS = {
+    [ :string, String ] => :to_s.to_proc,
+    [ :integer, Integer ] => :to_i.to_proc,
+    [ :float, Float ] => :to_f.to_proc,
+    [ :boolean ] => -> (v) { BOOLEAN_EQUIVALENT[v] },
+    [ :date, Date ] => -> (v) { Date.parse(v) },
+    [ :datetime, DateTime ] => -> (v) { DateTime.parse(v) },
+    [ :time, Time ] => -> (v) { v.match?(/\A\d+\z/) ? Time.at(v.to_i) : Time.parse(v) }
+  }.flat_map do |a, v|
+    a.map do |k|
+      [ k, v ]
+    end
+  end.to_h.freeze
   
   # == Properties ===========================================================
 
@@ -70,6 +82,11 @@ class Configature::Namespace
 
   def parameter(parameter_name, default: nil, as: :string, name: nil, env: nil, remap: nil)
     name ||= parameter_name
+
+    case (as)
+    when Class, Symbol
+      as = RECAST_AS[as]
+    end
 
     @parameters[name] = {
       name: name,
@@ -123,6 +140,10 @@ class Configature::Namespace
         case (remap = param[:remap])
         when Hash, Proc
           value = remap[value] || value
+        end
+
+        if (!value.nil? and as = param[:as])
+          value = as[value]
         end
 
         [ param[:name], value.nil? ? param[:default].call : value ]

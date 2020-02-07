@@ -190,5 +190,60 @@ RSpec.describe Configature::Namespace do
 
       expect(data).to eq(with_default: 'example')
     end
+
+    context 'can convert values using the as argument' do
+      before do
+        @source = {
+          'nested' => {
+            'maximum' => '11'
+          }
+        }.freeze
+      end
+
+      it 'with a Ruby class argument' do
+        namespace = Configature::Namespace.new
+        namespace.namespace :nested do
+          maximum as: Integer, default: 0
+        end
+      
+        data = namespace.__instantiate(source: @source).to_h
+    
+        expect(data).to eq(
+          nested: {
+            maximum: 11
+          }
+        )
+      end
+
+      it 'with a Symbol argument' do
+        namespace = Configature::Namespace.new
+        namespace.namespace :nested do
+          maximum as: :integer, default: 0
+        end
+      
+        data = namespace.__instantiate(source: @source).to_h
+    
+        expect(data).to eq(
+          nested: {
+            maximum: 11
+          }
+        )
+      end
+
+      it 'with a Proc argument' do
+        namespace = Configature::Namespace.new
+        namespace.namespace :nested do
+          maximum as: :to_i.to_proc, default: 0
+        end
+      
+        data = namespace.__instantiate(source: @source).to_h
+    
+        expect(data).to eq(
+          nested: {
+            maximum: 11
+          }
+        )
+      end
+    end
   end
 end
