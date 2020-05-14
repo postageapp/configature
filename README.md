@@ -90,6 +90,19 @@ relative to `Rails.root` if `Rails` is defined.
 This value can be overridden with the environment variable `EXAMPLE_ARGUMENT`
 or in a config file `config/example.yml` under the `argument:` key.
 
+The location of the config file for a namespace can be overridden with
+the `config_dir` directive:
+
+```ruby
+class MyConfig < Configature::Config
+  namespace :example do
+    self.config_dir = File.expand_path('../conf', __dir__)
+
+    argument default: 'value'
+  end
+end
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then,
