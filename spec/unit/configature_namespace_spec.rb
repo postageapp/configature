@@ -64,67 +64,86 @@ RSpec.describe Configature::Namespace do
     expect(data).to eq(inner: { custom: 'env_value', no_env: nil })
   end
 
-  it('imports settings for a defined environment') do
-    namespace = Configature::Namespace.new
-    namespace.environment_name
-    namespace.namespace :nested do
-      content as: :integer, default: 0
+  context('imports settings from a YAML file') do
+    it('into the root namespace') do
+      namespace = Configature::Namespace.new
+      namespace.test
+      namespace.namespace :nested do
+        content as: :integer, default: 0
+      end
+
+      source = YAML.safe_load(
+        File.read(File.expand_path('../examples/without_environment.yml', __dir__))
+      )
+
+      data = namespace.__instantiate(source: source).to_h
+
+      expect(data).to eq(
+        test: 'value',
+        nested: {
+          content: 22
+        }
+      )
     end
 
-    namespace.env 'IMPORT_EXAMPLE_ENV'
 
-    ENV['IMPORT_EXAMPLE_ENV'] = 'development'
+    it('into the root namespace but ifferentiated by environment') do
+      namespace = Configature::Namespace.new
+      namespace.environment_name
+      namespace.namespace :nested do
+        content as: :integer, default: 0
+      end
 
-    source = Configature::Support.yaml_if_exist(
-      File.expand_path('../examples/with_environment.yml', __dir__)
-    )
+      namespace.env 'IMPORT_EXAMPLE_ENV'
 
-    data = namespace.__instantiate(source: source).to_h
+      ENV['IMPORT_EXAMPLE_ENV'] = 'development'
 
-    expect(data).to eq(
-      environment_name: 'development',
-      nested: {
-        content: 100
-      }
-    )
-  end
+      source = Configature::Support.yaml_if_exist(
+        File.expand_path('../examples/with_environment.yml', __dir__)
+      )
 
-  it('imports settings from a YAML file') do
-    namespace = Configature::Namespace.new
-    namespace.test
-    namespace.namespace :nested do
-      content as: :integer, default: 0
+      data = namespace.__instantiate(source: source).to_h
+
+      expect(data).to eq(
+        environment_name: 'development',
+        nested: {
+          content: 100
+        }
+      )
     end
 
-    source = YAML.safe_load(
-      File.read(File.expand_path('../examples/without_environment.yml', __dir__))
-    )
+    context('including array definitions') do
+      it('that are present') do
+        namespace = Configature::Namespace.new
+        namespace.array default: %w[ x y z ]
 
-    data = namespace.__instantiate(source: source).to_h
+        source = YAML.safe_load(
+          File.read(File.expand_path('../examples/with_array.yml', __dir__))
+        )
 
-    expect(data).to eq(
-      test: 'value',
-      nested: {
-        content: 22
-      }
-    )
+        data = namespace.__instantiate(source: source).to_h
+
+        expect(data).to eq(
+          array: %w[ a b c ]
+        )
+      end
+
+      it('that are absent') do
+        namespace = Configature::Namespace.new
+        namespace.array default: %w[ x y z ]
+
+        source = YAML.safe_load(
+          File.read(File.expand_path('../examples/without_array.yml', __dir__))
+        )
+
+        data = namespace.__instantiate(source: source).to_h
+
+        expect(data).to eq(
+          array: %w[ x y z ]
+        )
+      end
+    end
   end
-
-  it('imports settings from a YAML file including arrays') do
-    namespace = Configature::Namespace.new
-    namespace.array default: %w[ x y z ]
-
-    source = YAML.safe_load(
-      File.read(File.expand_path('../examples/with_array.yml', __dir__))
-    )
-
-    data = namespace.__instantiate(source: source).to_h
-
-    expect(data).to eq(
-      array: %w[ a b c ]
-    )
-  end
-
 
   context 'supports rewriting certain parameters' do
     it 'using a Hash look-up table' do

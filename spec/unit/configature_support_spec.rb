@@ -57,7 +57,7 @@ RSpec.describe Configature::Support do
       expect(encapsulated).to eq(
         OpenStruct.new(example: OpenStruct.new(nested: OpenStruct.new(value: 'inner')))
       )
-      
+
       expect(encapsulated.example.nested.value).to eq('inner')
     end
 
@@ -81,7 +81,13 @@ RSpec.describe Configature::Support do
 
       expect(encapsulated.list[1].b).to be(2)
     end
-    
+
+    it 'will default an empty config to an empty Hash' do
+      empty_yml = File.expand_path('../examples/without_array.yml', __dir__)
+
+      expect(yaml_if_exist(empty_yml)).to eq({ })
+    end
+
     it 'leaves non-hash values as-is' do
       [
         'string',
