@@ -30,6 +30,7 @@ DEPENDENCIES
   configature!
   rake
   rspec
+  rspec-core
 
 BUNDLED WITH
    2.1.4
