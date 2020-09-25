@@ -7,9 +7,9 @@ require_relative './namespace'
 
 class Configature::Config < Configature::Data
   # == Constants ============================================================
-  
+
   # == Properties ===========================================================
-  
+
   # == Class Methods ========================================================
 
   def self.config_dir
@@ -42,11 +42,9 @@ class Configature::Config < Configature::Data
       iv = :"@#{name}"
 
       singleton_class.send(:define_method, name) do
-        config_path = File.expand_path(file, self.config_dir)
-
-        config = Configature::Support.yaml_if_exist(config_path)
-
-        instance_variable_get(iv) or instance_variable_set(iv, namespace.__instantiate(source: config))
+        instance_variable_get(iv) or instance_variable_set(iv, namespace.__instantiate(
+          source: Configature::Support.yaml_if_exist(File.expand_path(file, self.config_dir))
+        ))
       end
     end
   end
@@ -54,7 +52,7 @@ class Configature::Config < Configature::Data
   def self.namespaces
     @namespaces ||= { }
   end
-  
+
   # == Instance Methods =====================================================
 
   def initialize(config_dir: nil, env: ENV)
