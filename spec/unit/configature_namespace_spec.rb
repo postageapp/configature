@@ -53,7 +53,7 @@ RSpec.describe Configature::Namespace do
 
     root.namespace(:inner) do
       custom env: 'INNER_VALUE'
-      no_env env: false 
+      no_env env: false
     end
 
     expect(root[:inner][:custom][:env]).to eq('INNER_VALUE')
@@ -63,10 +63,10 @@ RSpec.describe Configature::Namespace do
 
     expect(data).to eq(inner: { custom: 'env_value', no_env: nil })
   end
-  
+
   it('imports settings for a defined environment') do
     namespace = Configature::Namespace.new
-    namespace.environment_name 
+    namespace.environment_name
     namespace.namespace :nested do
       content as: :integer, default: 0
     end
@@ -91,13 +91,13 @@ RSpec.describe Configature::Namespace do
 
   it('imports settings from a YAML file') do
     namespace = Configature::Namespace.new
-    namespace.test 
+    namespace.test
     namespace.namespace :nested do
       content as: :integer, default: 0
     end
 
     source = YAML.safe_load(
-      File.open(File.expand_path('../examples/without_environment.yml', __dir__))
+      File.read(File.expand_path('../examples/without_environment.yml', __dir__))
     )
 
     data = namespace.__instantiate(source: source).to_h
@@ -109,6 +109,22 @@ RSpec.describe Configature::Namespace do
       }
     )
   end
+
+  it('imports settings from a YAML file including arrays') do
+    namespace = Configature::Namespace.new
+    namespace.array default: %w[ x y z ]
+
+    source = YAML.safe_load(
+      File.read(File.expand_path('../examples/with_array.yml', __dir__))
+    )
+
+    data = namespace.__instantiate(source: source).to_h
+
+    expect(data).to eq(
+      array: %w[ a b c ]
+    )
+  end
+
 
   context 'supports rewriting certain parameters' do
     it 'using a Hash look-up table' do
@@ -205,9 +221,9 @@ RSpec.describe Configature::Namespace do
         namespace.namespace :nested do
           maximum as: Integer, default: 0
         end
-      
+
         data = namespace.__instantiate(source: @source).to_h
-    
+
         expect(data).to eq(
           nested: {
             maximum: 11
@@ -220,9 +236,9 @@ RSpec.describe Configature::Namespace do
         namespace.namespace :nested do
           maximum as: :integer, default: 0
         end
-      
+
         data = namespace.__instantiate(source: @source).to_h
-    
+
         expect(data).to eq(
           nested: {
             maximum: 11
@@ -235,9 +251,9 @@ RSpec.describe Configature::Namespace do
         namespace.namespace :nested do
           maximum as: :to_i.to_proc, default: 0
         end
-      
+
         data = namespace.__instantiate(source: @source).to_h
-    
+
         expect(data).to eq(
           nested: {
             maximum: 11

@@ -23,6 +23,7 @@ class Configature::Namespace
   end
 
   RECAST_AS = {
+    [ :array, Array ] => -> (v) { v.is_a?(Array) ? v : [ v ] },
     [ :string, String ] => :to_s.to_proc,
     [ :integer, Integer ] => :to_i.to_proc,
     [ :float, Float ] => :to_f.to_proc,
@@ -35,16 +36,16 @@ class Configature::Namespace
       [ k, v ]
     end
   end.to_h.freeze
-  
+
   # == Properties ===========================================================
 
   attr_reader :name
   attr_reader :env_name_prefix
   attr_reader :namespaces
   attr_reader :parameters
-  
+
   # == Class Methods ========================================================
-  
+
   # == Instance Methods =====================================================
 
   def initialize(name = nil, env_name_prefix: '', env_suffix: '', extends: nil)
@@ -80,8 +81,9 @@ class Configature::Namespace
     @env_default = default
   end
 
-  def parameter(parameter_name, default: nil, as: :string, name: nil, env: nil, remap: nil)
+  def parameter(parameter_name, default: nil, as: nil, name: nil, env: nil, remap: nil)
     name ||= parameter_name
+    as ||= default.is_a?(Array) ? :array : :string
 
     case (as)
     when Class, Symbol
