@@ -12,3 +12,5 @@ rvm:
 before_install:
 - gem install bundler -v 2.1.4
 - gem install rake
+script:
+- bundle exec rspec
