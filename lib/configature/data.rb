@@ -19,8 +19,8 @@ class Configature::Data < OpenStruct
   # == Instance Methods =====================================================
 
   def to_h
-    super.transform_values do |v|
-      self.class.hashify(v)
-    end
+    super.map do |k, v|
+      [ k, self.class.hashify(v) ]
+    end.to_h
   end
 end
