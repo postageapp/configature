@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    configature (0.3.3)
+    configature (0.3.4)
 
 GEM
   remote: https://rubygems.org/
