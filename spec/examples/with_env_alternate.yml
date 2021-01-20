@@ -1,0 +1,8 @@
+development:
+  database: example_dev
+development_alternate:
+  database: example_alternate_dev
+test:
+  database: example_test
+test_alternate:
+  database: example_alternate_test

@@ -32,7 +32,7 @@ class ConfigWithEnvironment < Configature::Config
   end
 end
 
-class ConfigWithEnvironmentAndAlternate < Configature::Config
+class ConfigWithAndAlternate < Configature::Config
   namespace :with_alternate do
     env :RAILS_ENV
 
@@ -42,6 +42,18 @@ class ConfigWithEnvironmentAndAlternate < Configature::Config
     namespace :alternate, extends: :primary do
       database as: String
     end
+  end
+end
+
+class ConfigWithEnvironmentAndAlternate < Configature::Config
+  namespace :with_env_alternate do
+    env :RAILS_ENV
+
+    database as: String
+  end
+
+  namespace :alternate, env_suffix: '_alternate', extends: :with_env_alternate do
+    database as: String
   end
 end
 
@@ -108,7 +120,7 @@ RSpec.describe Configature::Config do
     end
 
     it 'configurations with alternates' do
-      config = ConfigWithEnvironmentAndAlternate.new(
+      config = ConfigWithAndAlternate.new(
         config_dir: File.expand_path('../examples/', __dir__),
         env: { 'RAILS_ENV' => 'test' }
       )
@@ -120,6 +132,20 @@ RSpec.describe Configature::Config do
         alternate: {
           database: 'example_alternate_test'
         }
+      )
+    end
+
+    it 'configurations with environment having alternates' do
+      config = ConfigWithEnvironmentAndAlternate.new(
+        config_dir: File.expand_path('../examples/', __dir__),
+        env: { 'RAILS_ENV' => 'test' }
+      )
+
+      expect(config.with_env_alternate.to_h).to eq(
+        database: 'example_test'
+      )
+      expect(config.alternate.to_h).to eq(
+        database: 'example_alternate_test'
       )
     end
 

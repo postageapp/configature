@@ -55,12 +55,14 @@ class Configature::Config < Configature::Data
 
   # == Instance Methods =====================================================
 
-  def initialize(config_dir: nil, env: ENV)
+  def initialize(config_dir: nil, path: nil, env: ENV, data: nil)
     super(
       self.class.namespaces.map do |name, namespace|
-        config_path = File.expand_path('%s.yml' % name, config_dir || self.class.config_dir)
+        config = data || begin
+           path ||= File.expand_path('%s.yml' % name, config_dir || self.class.config_dir)
 
-        config = Configature::Support.yaml_if_exist(config_path)
+           Configature::Support.yaml_if_exist(path)
+        end
 
         [
           name,
