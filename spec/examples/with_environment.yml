@@ -15,3 +15,6 @@ test:
   environment_name: test
   nested:
     content: 116
+test_alternate:
+  nested:
+    content: 202

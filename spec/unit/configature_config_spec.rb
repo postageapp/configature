@@ -32,6 +32,19 @@ class ConfigWithEnvironment < Configature::Config
   end
 end
 
+class ConfigWithEnvironmentAndAlternate < Configature::Config
+  namespace :with_alternate do
+    env :RAILS_ENV
+
+    namespace :primary do
+      database as: String
+    end
+    namespace :alternate, extends: :primary do
+      database as: String
+    end
+  end
+end
+
 class ConfigWithNamespaceParameter < Configature::Config
   namespace :main do |main|
     main.property name: :namespace
@@ -90,6 +103,22 @@ RSpec.describe Configature::Config do
         environment_name: 'development',
         nested: {
           content: 100
+        }
+      )
+    end
+
+    it 'configurations with alternates' do
+      config = ConfigWithEnvironmentAndAlternate.new(
+        config_dir: File.expand_path('../examples/', __dir__),
+        env: { 'RAILS_ENV' => 'test' }
+      )
+
+      expect(config.with_alternate.to_h).to eq(
+        primary: {
+          database: 'example_test'
+        },
+        alternate: {
+          database: 'example_alternate_test'
         }
       )
     end

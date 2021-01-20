@@ -1,0 +1,10 @@
+development:
+  primary:
+    database: example_dev
+  alternate:
+    database: example_alternate_dev
+test:
+  primary:
+    database: example_test
+  alternate:
+    database: example_alternate_test
