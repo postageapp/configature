@@ -40,6 +40,7 @@ class Configature::Namespace
   # == Properties ===========================================================
 
   attr_reader :name
+  attr_reader :config_name
   attr_reader :env_name_prefix
   attr_reader :namespaces
   attr_reader :parameters
@@ -53,10 +54,12 @@ class Configature::Namespace
     @extends = extends
     @env = extends&.instance_variable_get(:@env)
     @env_default = extends&.instance_variable_get(:@env_default)
-    @namespaces = extends ? extends.namespaces.dup : { }
-    @parameters = extends ? extends.parameters.dup : { }
+    @namespaces = extends&.namespaces&.dup || { }
+    @parameters = extends&.parameters&.dup || { }
     @env_suffix = env_suffix
     @env_name_prefix = name ? Configature::Support.extend_env_prefix(env_name_prefix, name) : ''
+
+    @config_name = extends&.config_name || name
 
     yield(self) if (block_given?)
   end
@@ -64,7 +67,12 @@ class Configature::Namespace
   def namespace(name, env_suffix: '', extends: nil, &block)
     name = name.to_sym
 
-    @namespaces[name] = self.class.new(name, env_suffix: env_suffix, extends: extends && self.namespaces[extends], env_name_prefix: @env_name_prefix).tap do |n|
+    @namespaces[name] = self.class.new(
+      name,
+      env_suffix: env_suffix,
+      extends: extends && self.namespaces[extends],
+      env_name_prefix: @env_name_prefix
+    ).tap do |n|
       case (block&.arity)
       when nil
         nil

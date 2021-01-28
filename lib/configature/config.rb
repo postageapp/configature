@@ -21,7 +21,9 @@ class Configature::Config < Configature::Data
   end
 
   def self.namespace(name, file: nil, env_suffix: '', extends: nil, &block)
-    namespace = self.namespaces[name] = Configature::Namespace.new(name, env_suffix: env_suffix, extends: extends && self.namespaces[extends]).tap do |n|
+    extends &&= self.namespaces[extends]
+
+    namespace = self.namespaces[name] = Configature::Namespace.new(name, env_suffix: env_suffix, extends: extends).tap do |n|
       case (block&.arity)
       when nil
         nil
@@ -32,7 +34,7 @@ class Configature::Config < Configature::Data
       end
     end
 
-    file = file&.to_s || name.to_s
+    file = (file || extends&.config_name || name).to_s
 
     if (file and !file.include?('.'))
       file += '.yml'
@@ -59,9 +61,9 @@ class Configature::Config < Configature::Data
     super(
       self.class.namespaces.map do |name, namespace|
         config = data || begin
-           path ||= File.expand_path('%s.yml' % name, config_dir || self.class.config_dir)
+          path ||= File.expand_path('%s.yml' % namespace.config_name, config_dir || self.class.config_dir)
 
-           Configature::Support.yaml_if_exist(path)
+          Configature::Support.yaml_if_exist(path)
         end
 
         [
