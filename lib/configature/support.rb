@@ -6,9 +6,8 @@ module Configature::Support
   def yaml_if_exist(path)
     return unless (File.exist?(path))
 
-    # REFACTOR: Use safe_load if safe_load supports aliases
     File.open(path) do |f|
-      YAML.load(f) or { }
+      YAML.safe_load(f, aliases: true) or { }
     end
   end
 
